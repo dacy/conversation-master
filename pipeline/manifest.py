@@ -9,7 +9,16 @@ import re
 
 from . import questions, segment
 
-WEB_DATA = os.path.join(os.path.dirname(__file__), "..", "web", "data")
+def web_dir():
+    """The web/ folder: next to this package in a checkout / editable install,
+    else ./web relative to where the command is run."""
+    pkg_web = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "web"))
+    if os.path.exists(os.path.join(pkg_web, "index.html")):
+        return pkg_web
+    return os.path.abspath("web")
+
+
+WEB_DATA = os.path.join(web_dir(), "data")
 
 
 def _slug(text, max_len=40):

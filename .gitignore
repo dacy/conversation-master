@@ -1,5 +1,6 @@
 # generated feed data (rebuild with `python -m pipeline demo` or a fetch command)
 web/data/
 __pycache__/
+.venv/
 *.pyc
 node_modules/

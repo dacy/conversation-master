@@ -11,23 +11,30 @@ short segments?** Short answer: yes — details per source below.
 
 ## Quick start
 
+Needs `ffmpeg` on PATH (`apt install ffmpeg` / `brew install ffmpeg`), plus
+`espeak-ng` if you want the offline demo mode.
+
+With [uv](https://docs.astral.sh/uv/) (recommended — manages the virtualenv for you):
+
 ```bash
-pip install -r requirements.txt   # yt-dlp
-# also needs ffmpeg on PATH (apt install ffmpeg / brew install ffmpeg)
+uv sync                # creates .venv and installs everything
 
 # 1. Build a feed. Offline demo (synthesized speech, no network needed):
-python -m pipeline demo
+uv run cliplingo demo
 
 # ...or fetch real material:
-python -m pipeline youtube "easy english conversation practice" --max 3
-python -m pipeline youtube https://www.youtube.com/watch?v=VIDEO_ID
-python -m pipeline tiktok https://www.tiktok.com/@somecreator/video/123456789
-python -m pipeline npr news-now --max 1     # keys: news-now, up-first, fresh-air, or any RSS URL
+uv run cliplingo youtube "easy english conversation practice" --max 3
+uv run cliplingo youtube https://www.youtube.com/watch?v=VIDEO_ID
+uv run cliplingo tiktok https://www.tiktok.com/@somecreator/video/123456789
+uv run cliplingo npr news-now --max 1   # keys: news-now, up-first, fresh-air, or any RSS URL
 
 # 2. Serve the player:
-python -m pipeline serve
+uv run cliplingo serve
 # open http://localhost:8000, tap "Start listening", scroll
 ```
+
+With plain pip instead: `pip install -e .`, then the same commands via
+`cliplingo ...` or `python -m pipeline ...`.
 
 Fetch commands **append** to the same feed (`web/data/manifest.json`), so you
 can mix sources. The demo mode needs `espeak-ng` installed.

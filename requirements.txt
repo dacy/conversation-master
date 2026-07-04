@@ -1,1 +1,3 @@
-yt-dlp>=2026.6.9
+# dependencies live in pyproject.toml; this file exists for plain-pip users
+# and the .claude session-start hook
+-e .

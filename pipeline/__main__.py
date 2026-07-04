@@ -72,7 +72,7 @@ def main():
     elif args.cmd == "serve":
         import functools
         import http.server
-        web = os.path.join(os.path.dirname(__file__), "..", "web")
+        web = manifest.web_dir()
         handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=web)
         print("Serving on http://localhost:8000")
         http.server.ThreadingHTTPServer(("", 8000), handler).serve_forever()
