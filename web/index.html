@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ClipLingo — learn by scrolling</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="start-overlay">
+  <div class="start-card">
+    <h1>Clip<span>Lingo</span></h1>
+    <p>Short real-world clips. Listen, answer, scroll.</p>
+    <button id="start-btn">Start listening</button>
+  </div>
+</div>
+<main id="feed" aria-label="clip feed"></main>
+<template id="card-template">
+  <section class="card">
+    <header class="card-top">
+      <span class="badge"></span>
+      <a class="attribution" target="_blank" rel="noopener">original ↗</a>
+    </header>
+    <div class="stage">
+      <button class="play-toggle" aria-label="play or pause">
+        <svg viewBox="0 0 24 24" class="icon-play"><path d="M8 5v14l11-7z"/></svg>
+        <svg viewBox="0 0 24 24" class="icon-pause"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+      </button>
+      <div class="wave" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      </div>
+      <div class="progress"><div class="progress-fill"></div></div>
+      <div class="clip-title"></div>
+    </div>
+    <div class="quiz">
+      <p class="prompt"></p>
+      <div class="options"></div>
+      <p class="feedback" role="status"></p>
+    </div>
+    <div class="tools">
+      <button class="reveal">Show transcript</button>
+      <button class="replay">Replay ↺</button>
+    </div>
+    <p class="transcript" hidden></p>
+    <audio preload="metadata"></audio>
+  </section>
+</template>
+<script src="app.js"></script>
+</body>
+</html>
