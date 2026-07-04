@@ -8,8 +8,6 @@ silence-based segmentation with no quiz (listen-and-shadow mode).
 from . import youtube
 
 
-def fetch(urls, workdir, max_items=5, language="en"):
-    items = youtube.fetch(list(urls), workdir, max_items=max_items, language=language)
-    for item in items:
-        item.source = "tiktok"
-    return items
+def fetch(urls, workdir, max_items=5, language="en", **kwargs):
+    return youtube.fetch(list(urls), workdir, max_items=max_items,
+                         language=language, source="tiktok", **kwargs)
