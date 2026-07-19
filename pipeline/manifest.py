@@ -7,7 +7,7 @@ import json
 import os
 import re
 
-from . import questions, segment
+from . import difficulty, questions, segment
 
 def web_dir():
     """The web/ folder: next to this package in a checkout / editable install,
@@ -26,7 +26,7 @@ def _slug(text, max_len=40):
     return s[:max_len] or "clip"
 
 
-def build_clips(item, out_dir=None, max_clips_per_item=8):
+def build_clips(item, out_dir=None, max_clips_per_item=8, topic=None):
     """Segment one SourceItem into clips; returns manifest clip dicts."""
     out_dir = out_dir or os.path.join(WEB_DATA, "clips")
     os.makedirs(out_dir, exist_ok=True)
@@ -57,23 +57,41 @@ def build_clips(item, out_dir=None, max_clips_per_item=8):
             "duration": round(end - start, 1),
             "transcript": text,
             "question": q,
+            "topic": topic,
+            "difficulty": difficulty.score(text, end - start),
         })
     return clips
 
 
 def append_manifest(clips, data_dir=None):
-    """Merge clips into web/data/manifest.json (deduped by id)."""
+    """Merge clips into web/data/manifest.json (deduped by id), keeping any
+    daily meta (generated/topics) already present."""
     data_dir = data_dir or WEB_DATA
     os.makedirs(data_dir, exist_ok=True)
     path = os.path.join(data_dir, "manifest.json")
-    existing = []
+    doc = {}
     if os.path.exists(path):
         with open(path, encoding="utf-8") as f:
-            existing = json.load(f).get("clips", [])
-    by_id = {c["id"]: c for c in existing}
+            doc = json.load(f)
+    by_id = {c["id"]: c for c in doc.get("clips", [])}
     for c in clips:
         by_id[c["id"]] = c
-    merged = list(by_id.values())
+    doc["clips"] = list(by_id.values())
     with open(path, "w", encoding="utf-8") as f:
-        json.dump({"clips": merged}, f, ensure_ascii=False, indent=1)
-    return path, len(merged)
+        json.dump(doc, f, ensure_ascii=False, indent=1)
+    return path, len(doc["clips"])
+
+
+def write_daily_manifest(clips, topics_menu, generated, data_dir=None):
+    """Replace manifest.json with today's build: meta + fresh clip list.
+
+    This is the entire contract between the daily build and every app
+    (web now, iOS later): {generated, topics, clips}.
+    """
+    data_dir = data_dir or WEB_DATA
+    os.makedirs(data_dir, exist_ok=True)
+    path = os.path.join(data_dir, "manifest.json")
+    doc = {"generated": generated, "topics": topics_menu, "clips": clips}
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(doc, f, ensure_ascii=False, indent=1)
+    return path, len(clips)

@@ -1,4 +1,5 @@
 """WebVTT parsing tolerant of yt-dlp auto-generated captions."""
+import html
 import re
 
 from .models import Cue
@@ -36,7 +37,9 @@ def parse_vtt(path: str) -> list:
                 continue
             if block_start is None or not line or line == "WEBVTT" or line.startswith(("NOTE", "Kind:", "Language:", "STYLE")):
                 continue
-            text = _TAG.sub("", line).strip()
+            # Strip timing/style tags first, then decode WebVTT entities
+            # (&gt;&gt; speaker markers, &amp;, &nbsp;, etc.) to real characters.
+            text = html.unescape(_TAG.sub("", line)).strip()
             if not text:
                 continue
             if cues and cues[-1].text == text:
