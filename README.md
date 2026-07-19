@@ -39,6 +39,24 @@ With plain pip instead: `pip install -e .`, then the same commands via
 Fetch commands **append** to the same feed (`web/data/manifest.json`), so you
 can mix sources. The demo mode needs `espeak-ng` installed.
 
+## Daily curated build
+
+```bash
+uv run cliplingo daily [--per-topic N] [--max-duration S] [--cookies-from-browser chrome]
+```
+
+Fetches fresh clips for every topic in the fixed menu (`pipeline/topics.py`),
+tags each clip with its topic and an offline difficulty band
+(beginner/intermediate/advanced — see `pipeline/difficulty.py`), and
+**replaces** `web/data/manifest.json` — unlike the fetch commands above,
+which append. On first launch the player shows an onboarding step (pick
+topics and level, saved to `localStorage`) and filters the feed on-device,
+the same contract an iOS client would use. The gear icon (top right)
+reopens onboarding. Scheduling (cron/CI) is intentionally not wired up yet.
+
+As with the other commands, the same works via `python -m pipeline daily ...`
+without `uv run`.
+
 ## How it works
 
 ```
