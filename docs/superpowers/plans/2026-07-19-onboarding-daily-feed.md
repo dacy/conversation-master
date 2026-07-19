@@ -797,7 +797,10 @@ function renderFeed(clips) {
 }
 
 function showOnboarding(topics, current) {
-  const selected = new Set(current.topics);
+  // Ignore saved topics that are not in today's menu — a stale key would
+  // otherwise invisibly satisfy the "≥1 topic" gate with no chip selected.
+  const menuKeys = new Set(topics.map((t) => t.key));
+  const selected = new Set(current.topics.filter((k) => menuKeys.has(k)));
   let level = current.level;
 
   topicChipsEl.replaceChildren();
