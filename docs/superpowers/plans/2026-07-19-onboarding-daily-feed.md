@@ -142,8 +142,11 @@ TOPICS = [
      "queries": [{"source": "youtube", "query": "easy english conversation"},
                  {"source": "youtube", "query": "daily english dialogue"}]},
     {"key": "news", "label": "News & Current Events",
-     "queries": [{"source": "npr", "feed": "news-now"},
-                 {"source": "youtube", "query": "english news for learners"}]},
+     # YouTube first: NPR feeds have no transcripts, so their clips are
+     # unrated and never reach a leveled feed. If NPR ran first it would
+     # eat the whole per-topic budget and leave News empty for everyone.
+     "queries": [{"source": "youtube", "query": "english news for learners"},
+                 {"source": "npr", "feed": "news-now"}]},
     {"key": "science", "label": "Science & Technology",
      "queries": [{"source": "youtube", "query": "science explained simply"},
                  {"source": "youtube", "query": "how things work"}]},
@@ -599,13 +602,20 @@ Add a branch before `elif args.cmd == "serve":`:
             clips = []
             for item in items:
                 clips.extend(manifest.build_clips(item, topic=t["key"]))
-            summary.append((t["key"], len(items), len(clips)))
+            unrated = sum(1 for c in clips if not c["difficulty"])
+            summary.append((t["key"], len(items), len(clips), unrated))
             all_clips.extend(clips)
+        if not all_clips:
+            print("Daily build fetched nothing — keeping the existing manifest.",
+                  file=sys.stderr)
+            sys.exit(1)
         generated = datetime.date.today().isoformat()
         path, total = manifest.write_daily_manifest(all_clips, topics.menu(), generated)
         print(f"\nDaily build {generated} — {total} clips: {path}")
-        for key, n_items, n_clips in summary:
+        for key, n_items, n_clips, n_unrated in summary:
             note = "" if n_clips else "  (nothing today)"
+            if n_unrated:
+                note += f"  ({n_unrated} unrated — hidden from leveled feeds)"
             print(f"  {key:10s} {n_items} items -> {n_clips} clips{note}")
         dist = {}
         for c in all_clips:
