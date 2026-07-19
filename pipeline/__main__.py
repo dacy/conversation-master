@@ -16,13 +16,13 @@ import tempfile
 from . import manifest
 
 
-def _ingest(items):
+def _ingest(items, topic=None):
     if not items:
         print("No items fetched — nothing to do.", file=sys.stderr)
         sys.exit(1)
     all_clips = []
     for item in items:
-        clips = manifest.build_clips(item)
+        clips = manifest.build_clips(item, topic=topic)
         mode = "transcript-aligned" if item.cues else "silence-based, no quiz"
         print(f"  {item.title!r}: {len(clips)} clips ({mode})")
         all_clips.extend(clips)
@@ -60,6 +60,15 @@ def main():
     sub.add_parser("demo", help="build offline demo feed with synthesized speech")
     sub.add_parser("serve", help="serve the web player on :8000")
 
+    daily = sub.add_parser("daily", help="build today's manifest across the fixed topic menu")
+    daily.add_argument("--per-topic", type=int, default=3, metavar="N",
+                       help="source items to fetch per topic (default 3)")
+    daily.add_argument("--max-duration", type=int, default=900, metavar="SECONDS",
+                       help="skip videos longer than this (default 900)")
+    daily.add_argument("--cookies-from-browser", metavar="BROWSER",
+                       help="use browser cookies to pass YouTube bot checks (chrome, firefox, safari, edge)")
+    daily.add_argument("--verbose", "-v", action="store_true", help="show full yt-dlp output")
+
     args = p.parse_args()
     workdir = os.path.join(tempfile.gettempdir(), "clip-pipeline-cache")
 
@@ -80,7 +89,48 @@ def main():
         _ingest(npr.fetch(args.feed, workdir, max_items=args.max))
     elif args.cmd == "demo":
         from . import demo
-        _ingest(demo.synthesize(workdir))
+        _ingest(demo.synthesize(workdir), topic="everyday")
+    elif args.cmd == "daily":
+        import datetime
+        from . import topics
+        from .sources import npr, youtube
+        all_clips, summary = [], []
+        for t in topics.TOPICS:
+            items = []
+            for q in t["queries"]:
+                remaining = args.per_topic - len(items)
+                if remaining <= 0:
+                    break
+                try:
+                    if q["source"] == "youtube":
+                        items += youtube.fetch(
+                            q["query"], workdir, max_items=remaining,
+                            max_duration=args.max_duration,
+                            cookies_from_browser=args.cookies_from_browser,
+                            verbose=args.verbose)
+                    elif q["source"] == "npr":
+                        items += npr.fetch(q["feed"], workdir, max_items=remaining)
+                except Exception as e:  # a dead topic must not kill the build
+                    print(f"  [{t['key']}] fetch failed: {e}", file=sys.stderr)
+            clips = []
+            for item in items:
+                clips.extend(manifest.build_clips(item, topic=t["key"]))
+            summary.append((t["key"], len(items), len(clips)))
+            all_clips.extend(clips)
+        generated = datetime.date.today().isoformat()
+        path, total = manifest.write_daily_manifest(all_clips, topics.menu(), generated)
+        print(f"\nDaily build {generated} — {total} clips: {path}")
+        for key, n_items, n_clips in summary:
+            note = "" if n_clips else "  (nothing today)"
+            print(f"  {key:10s} {n_items} items -> {n_clips} clips{note}")
+        dist = {}
+        for c in all_clips:
+            band = c["difficulty"] or "unrated"
+            dist[band] = dist.get(band, 0) + 1
+        print("Difficulty: " + (", ".join(
+            f"{band}: {dist[band]}" for band in
+            ("beginner", "intermediate", "advanced", "unrated") if band in dist)
+            or "no clips"))
     elif args.cmd == "serve":
         import functools
         import http.server
