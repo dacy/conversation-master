@@ -54,11 +54,16 @@ class TestScore(unittest.TestCase):
                 previous = BANDS.index(band)
 
     def test_denser_vocabulary_never_scores_easier(self):
-        """Monotonicity: at fixed wpm, SIMPLE <= MODERATE <= DENSE."""
-        for wpm in (80, 140, 200):
+        """Monotonicity: at fixed wpm, SIMPLE <= MODERATE <= DENSE — and the
+        lexical signal must actually change a band at some sampled wpm."""
+        strictly_harder = False
+        for wpm in (80, 130, 160, 200):
             bands = [BANDS.index(difficulty.score(repeat_to_wpm(s, wpm, 30), 30))
                      for s in (SIMPLE, MODERATE, DENSE)]
             self.assertEqual(bands, sorted(bands))
+            strictly_harder = strictly_harder or bands[2] > bands[0]
+        self.assertTrue(strictly_harder,
+                        "lexical load never changed a band at any sampled wpm")
 
 
 if __name__ == "__main__":
