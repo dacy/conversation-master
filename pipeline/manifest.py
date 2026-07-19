@@ -94,4 +94,17 @@ def write_daily_manifest(clips, topics_menu, generated, data_dir=None):
     doc = {"generated": generated, "topics": topics_menu, "clips": clips}
     with open(path, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
+    _prune_clips(data_dir, clips)
     return path, len(clips)
+
+
+def _prune_clips(data_dir, clips):
+    """Delete clip mp3s the freshly written manifest no longer references —
+    daily replaces the manifest, so yesterday's clips would otherwise pile up."""
+    clips_dir = os.path.join(data_dir, "clips")
+    if not os.path.isdir(clips_dir):
+        return
+    referenced = {os.path.basename(c["audio"]) for c in clips}
+    for name in os.listdir(clips_dir):
+        if name.endswith(".mp3") and name not in referenced:
+            os.remove(os.path.join(clips_dir, name))

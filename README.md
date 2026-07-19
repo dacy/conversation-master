@@ -54,9 +54,6 @@ topics and level, saved to `localStorage`) and filters the feed on-device,
 the same contract an iOS client would use. The gear icon (top right)
 reopens onboarding. Scheduling (cron/CI) is intentionally not wired up yet.
 
-As with the other commands, the same works via `python -m pipeline daily ...`
-without `uv run`.
-
 ## How it works
 
 ```

@@ -20,7 +20,8 @@ LEX_WEIGHT = 0.3
 BEGINNER_MAX = 0.35      # combined score below this -> beginner
 INTERMEDIATE_MAX = 0.65  # below this -> intermediate; else advanced
 
-_WORD = re.compile(r"[A-Za-zÀ-ÿ']+")
+# À-ÖØ-öø-ÿ: Latin-1 letters, skipping × (U+00D7) and ÷ (U+00F7)
+_WORD = re.compile(r"[A-Za-zÀ-ÖØ-öø-ÿ']+")
 
 
 def _clamp01(x):
@@ -29,7 +30,7 @@ def _clamp01(x):
 
 def score(transcript, duration):
     """Band for one clip, or None when there is too little signal to score."""
-    if not transcript or not duration or duration <= 0:
+    if not transcript or duration is None or duration <= 0:
         return None
     words = _WORD.findall(transcript)
     if len(words) < MIN_WORDS:

@@ -37,7 +37,13 @@ async function loadFeed() {
   allClips = manifest.clips || [];
   menuTopics = topicMenu(manifest);
   if (!menuTopics.length) {
-    renderFeed(shuffle(allClips)); // legacy manifest: show everything
+    // Legacy manifest: show everything. No picks were made, so the default
+    // "nothing matches your picks" empty-state copy would mislead.
+    if (!allClips.length) {
+      emptyState.innerHTML =
+        "This feed has no clips yet.<br>Run a fetch command, then refresh.";
+    }
+    renderFeed(shuffle(allClips));
     return;
   }
   gearBtn.hidden = false;
@@ -111,10 +117,16 @@ function showOnboarding(topics, current) {
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = "chip" + (selected.has(t.key) ? " selected" : "");
+    chip.setAttribute("aria-pressed", selected.has(t.key));
     chip.textContent = t.label;
     chip.addEventListener("click", () => {
-      selected.has(t.key) ? selected.delete(t.key) : selected.add(t.key);
+      if (selected.has(t.key)) {
+        selected.delete(t.key);
+      } else {
+        selected.add(t.key);
+      }
       chip.classList.toggle("selected", selected.has(t.key));
+      chip.setAttribute("aria-pressed", selected.has(t.key));
       updateSave();
     });
     topicChipsEl.appendChild(chip);
@@ -125,11 +137,16 @@ function showOnboarding(topics, current) {
     const card = document.createElement("button");
     card.type = "button";
     card.className = "level-card" + (lvl === level ? " selected" : "");
+    card.setAttribute("aria-pressed", lvl === level);
     card.innerHTML = `<strong>${lvl[0].toUpperCase() + lvl.slice(1)}</strong><span>${LEVEL_HINTS[lvl]}</span>`;
     card.addEventListener("click", () => {
       level = lvl;
-      [...levelCardsEl.children].forEach((el) => el.classList.remove("selected"));
+      [...levelCardsEl.children].forEach((el) => {
+        el.classList.remove("selected");
+        el.setAttribute("aria-pressed", "false");
+      });
       card.classList.add("selected");
+      card.setAttribute("aria-pressed", "true");
       updateSave();
     });
     levelCardsEl.appendChild(card);
@@ -233,21 +250,23 @@ function buildCard(clip) {
   return node;
 }
 
+const cardObserver = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      const audio = entry.target.querySelector("audio");
+      if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+        if (started) audio.play().catch(() => {});
+      } else {
+        audio.pause();
+      }
+    });
+  },
+  { root: feed, threshold: [0.6] }
+);
+
 function observeCards() {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        const audio = entry.target.querySelector("audio");
-        if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
-          if (started) audio.play().catch(() => {});
-        } else {
-          audio.pause();
-        }
-      });
-    },
-    { root: feed, threshold: [0.6] }
-  );
-  document.querySelectorAll(".card").forEach((c) => observer.observe(c));
+  cardObserver.disconnect(); // drop cards removed by the previous render
+  document.querySelectorAll(".card").forEach((c) => cardObserver.observe(c));
 }
 
 document.getElementById("start-btn").addEventListener("click", () => {

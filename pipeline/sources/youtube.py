@@ -11,6 +11,7 @@ import sys
 
 import yt_dlp
 
+from . import FFmpegNotFoundError
 from ..models import SourceItem
 from ..transcript import parse_vtt
 
@@ -19,8 +20,9 @@ def fetch(query_or_urls, workdir, max_items=3, language="en", max_duration=900,
           cookies_from_browser=None, verbose=False, source="youtube"):
     """Download audio+subs. Returns list[SourceItem]."""
     if not shutil.which("ffmpeg"):
-        sys.exit("ffmpeg not found on PATH — install it first "
-                 "(brew install ffmpeg / sudo apt install ffmpeg) and retry.")
+        raise FFmpegNotFoundError(
+            "ffmpeg not found on PATH — install it first "
+            "(brew install ffmpeg / sudo apt install ffmpeg) and retry.")
     os.makedirs(workdir, exist_ok=True)
     if isinstance(query_or_urls, str) and not query_or_urls.startswith("http"):
         # overfetch: search results are often long videos that get skipped below

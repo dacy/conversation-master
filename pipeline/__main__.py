@@ -14,6 +14,7 @@ import sys
 import tempfile
 
 from . import manifest
+from .sources import FFmpegNotFoundError
 
 
 def _ingest(items, topic=None):
@@ -32,6 +33,13 @@ def _ingest(items, topic=None):
 
 
 def main():
+    try:
+        _main()
+    except FFmpegNotFoundError as e:
+        sys.exit(str(e))
+
+
+def _main():
     p = argparse.ArgumentParser(prog="pipeline", description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -53,9 +61,9 @@ def main():
     tt.add_argument("--cookies-from-browser", metavar="BROWSER")
     tt.add_argument("--verbose", "-v", action="store_true")
 
-    npr = sub.add_parser("npr", help="fetch from an NPR/podcast RSS feed")
-    npr.add_argument("feed", help="feed key (news-now, up-first, fresh-air) or RSS URL")
-    npr.add_argument("--max", type=int, default=1)
+    npr_p = sub.add_parser("npr", help="fetch from an NPR/podcast RSS feed")
+    npr_p.add_argument("feed", help="feed key (news-now, up-first, fresh-air) or RSS URL")
+    npr_p.add_argument("--max", type=int, default=1)
 
     sub.add_parser("demo", help="build offline demo feed with synthesized speech")
     sub.add_parser("serve", help="serve the web player on :8000")

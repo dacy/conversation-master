@@ -19,18 +19,20 @@ class TestTopics(unittest.TestCase):
 
     def test_labels_and_queries_non_empty(self):
         for t in topics.TOPICS:
-            self.assertTrue(t["label"].strip(), t["key"])
-            self.assertTrue(t["queries"], t["key"])
+            with self.subTest(topic=t["key"]):
+                self.assertTrue(t["label"].strip())
+                self.assertTrue(t["queries"])
 
     def test_queries_well_formed(self):
         from pipeline.sources.npr import FEEDS
         for t in topics.TOPICS:
             for q in t["queries"]:
-                self.assertIn(q["source"], ("youtube", "npr"), t["key"])
-                if q["source"] == "youtube":
-                    self.assertTrue(q["query"].strip(), t["key"])
-                else:
-                    self.assertIn(q["feed"], FEEDS, t["key"])
+                with self.subTest(topic=t["key"], query=q):
+                    self.assertIn(q["source"], ("youtube", "npr"))
+                    if q["source"] == "youtube":
+                        self.assertTrue(q["query"].strip())
+                    else:
+                        self.assertIn(q["feed"], FEEDS)
 
     def test_menu_returns_key_label_pairs(self):
         m = topics.menu()

@@ -40,6 +40,15 @@ class TestWriteDailyManifest(unittest.TestCase):
             self.assertEqual([c["id"] for c in doc["clips"]], ["new"])
             self.assertEqual(doc["generated"], "2026-07-19")
 
+    def test_prunes_unreferenced_clip_files(self):
+        with tempfile.TemporaryDirectory() as d:
+            clips_dir = os.path.join(d, "clips")
+            os.makedirs(clips_dir)
+            for name in ("keep.mp3", "stale.mp3", "notes.txt"):
+                open(os.path.join(clips_dir, name), "w").close()
+            manifest.write_daily_manifest([clip("keep")], MENU, "2026-07-19", data_dir=d)
+            self.assertEqual(sorted(os.listdir(clips_dir)), ["keep.mp3", "notes.txt"])
+
 
 class TestAppendManifest(unittest.TestCase):
     def test_appends_and_dedupes(self):
