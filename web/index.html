@@ -15,7 +15,21 @@
     <button id="start-btn">Start listening</button>
   </div>
 </div>
-<main id="feed" aria-label="clip feed"></main>
+<div id="onboarding" hidden>
+  <div class="onboarding-card">
+    <h2>Build your daily feed</h2>
+    <p class="onboarding-hint">Pick one or more topics and your level.</p>
+    <h3>Topics</h3>
+    <div id="topic-chips" class="chips"></div>
+    <h3>Level</h3>
+    <div id="level-cards" class="level-cards"></div>
+    <button id="prefs-save" disabled>Start my feed</button>
+  </div>
+</div>
+<button id="edit-prefs" hidden aria-label="edit topics and level" title="Edit topics &amp; level">⚙</button>
+<main id="feed" aria-label="clip feed">
+  <p id="empty-state" hidden>Nothing matches your picks today.<br>Try more topics or a different level.</p>
+</main>
 <template id="card-template">
   <section class="card">
     <header class="card-top">

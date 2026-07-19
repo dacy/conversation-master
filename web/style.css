@@ -114,3 +114,51 @@ body {
   background: var(--card); border-radius: 12px; padding: .9rem 1rem;
   font-size: .92rem; line-height: 1.5; color: var(--muted);
 }
+
+/* ---- onboarding ---- */
+#onboarding {
+  position: fixed; inset: 0; z-index: 9;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 50% 30%, #1b2233, var(--bg) 70%);
+  overflow-y: auto;
+}
+#onboarding[hidden] { display: none; }
+.onboarding-card { max-width: 440px; width: 100%; padding: 2rem 1.4rem; }
+.onboarding-card h2 { font-size: 1.6rem; }
+.onboarding-hint { color: var(--muted); margin: .4rem 0 1.4rem; }
+.onboarding-card h3 {
+  font-size: .8rem; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--muted); margin: 1.2rem 0 .6rem;
+}
+.chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+.chip {
+  padding: .55rem 1rem; border-radius: 999px; border: 1px solid #2c3550;
+  background: var(--card); color: var(--text); font-size: .9rem; cursor: pointer;
+}
+.chip.selected { border-color: var(--accent); background: #1b2a4a; color: #cfe0ff; }
+.level-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; }
+.level-card {
+  padding: .9rem .5rem; border-radius: 12px; border: 1px solid #2c3550;
+  background: var(--card); color: var(--text); cursor: pointer;
+  display: flex; flex-direction: column; gap: .3rem; align-items: center;
+}
+.level-card span { font-size: .75rem; color: var(--muted); }
+.level-card.selected { border-color: var(--accent); background: #1b2a4a; }
+#prefs-save {
+  margin-top: 1.6rem; width: 100%; font-size: 1.05rem; padding: .9rem;
+  border: none; border-radius: 999px; background: var(--accent); color: white;
+  cursor: pointer;
+}
+#prefs-save:disabled { opacity: .4; cursor: default; }
+
+/* ---- gear + empty state ---- */
+#edit-prefs {
+  position: fixed; top: max(.8rem, env(safe-area-inset-top)); right: .9rem; z-index: 5;
+  width: 42px; height: 42px; border-radius: 50%; border: 1px solid #2c3550;
+  background: rgba(22, 26, 35, .8); color: var(--muted); font-size: 1.2rem; cursor: pointer;
+}
+#empty-state {
+  height: 100dvh; display: flex; align-items: center; justify-content: center;
+  text-align: center; color: var(--muted); line-height: 1.6; padding: 1.2rem;
+}
+#empty-state[hidden] { display: none; }
