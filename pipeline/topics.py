@@ -9,8 +9,11 @@ TOPICS = [
      "queries": [{"source": "youtube", "query": "easy english conversation"},
                  {"source": "youtube", "query": "daily english dialogue"}]},
     {"key": "news", "label": "News & Current Events",
-     "queries": [{"source": "npr", "feed": "news-now"},
-                 {"source": "youtube", "query": "english news for learners"}]},
+     # YouTube first: NPR feeds have no transcripts, so their clips are
+     # unrated and never reach a leveled feed. If NPR ran first it would
+     # eat the whole per-topic budget and leave News empty for everyone.
+     "queries": [{"source": "youtube", "query": "english news for learners"},
+                 {"source": "npr", "feed": "news-now"}]},
     {"key": "science", "label": "Science & Technology",
      "queries": [{"source": "youtube", "query": "science explained simply"},
                  {"source": "youtube", "query": "how things work"}]},
