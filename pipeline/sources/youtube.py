@@ -32,7 +32,15 @@ def fetch(query_or_urls, workdir, max_items=3, language="en", max_duration=900,
 
     skipped = []
 
-    def too_long(info, *, incomplete):
+    def skip_filter(info, *, incomplete):
+        # Live/upcoming streams have no fixed end — yt-dlp would download the
+        # DVR window indefinitely. They also report duration=None, so the
+        # length check below can't catch them; reject them explicitly first.
+        if info.get("is_live") or info.get("live_status") in ("is_live", "is_upcoming"):
+            msg = f"skipped {info.get('title') or info.get('id')!r}: live stream"
+            skipped.append(msg)
+            print(f"  {msg}", file=sys.stderr)
+            return msg
         dur = info.get("duration")
         if dur and dur > max_duration:
             msg = (f"skipped {info.get('title') or info.get('id')!r}: "
@@ -50,7 +58,7 @@ def fetch(query_or_urls, workdir, max_items=3, language="en", max_duration=900,
         "writeautomaticsub": True,
         "subtitleslangs": [language, f"{language}.*"],
         "subtitlesformat": "vtt",
-        "match_filter": too_long,
+        "match_filter": skip_filter,
         "ignoreerrors": True,
         "noplaylist": True,
         "quiet": not verbose,
@@ -84,8 +92,8 @@ def fetch(query_or_urls, workdir, max_items=3, language="en", max_duration=900,
 
     if not items:
         if skipped:
-            print(f"\nAll {len(skipped)} result(s) were longer than "
-                  f"{max_duration}s. Retry with --max-duration {max_duration * 4} "
+            print(f"\nAll {len(skipped)} result(s) were skipped (too long or "
+                  f"live stream). Retry with --max-duration {max_duration * 4} "
                   "or a query that finds shorter videos "
                   '(e.g. add "shorts" or "1 minute").', file=sys.stderr)
         else:
